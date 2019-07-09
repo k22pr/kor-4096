@@ -1,0 +1,34 @@
+{
+  "name": "kor-4096",
+  "description": "kor 4096 package",
+  "version": "0.1.4",
+  "main": "./dist/hexKor.js",
+  "types": "./dist/hexKor.d.ts",
+  "license": "MIT",
+  "author": "ksPr",
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/plugin-transform-typescript": "^7.4.5",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-add-module-exports": "^1.0.2",
+    "nodemon": "^1.19.1",
+    "ts-loader": "^6.0.2"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.4.5",
+    "@types/node": "^12.0.4"
+  },
+  "scripts": {
+    "babel-node": "babel-node --extensions \".ts,.tsx\"",
+    "serve": "nodemon --exec yarn run babel-node -- ./src/index.ts",
+    "build": "babel src --out-dir dist --extensions \".ts,.tsx\"",
+    "product": "node ./dist/index.js"
+  }
+}
