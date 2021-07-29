@@ -1,3 +1,5 @@
+import { isBuffer } from "./util";
+
 export default class Generator {
   private static StartCode: number = 44032;
   private static blockSize: number = 4096;
@@ -5,33 +7,30 @@ export default class Generator {
     let result = "";
     for (var i = 0; i < hex.length / 3; i++) {
       let number = parseInt(hex.substr(i * 3, 3), 16);
-      result += String.fromCharCode(
-        this.StartCode + (i % 2 == 0 ? number : number + this.blockSize)
-      );
+      result += String.fromCharCode(this.StartCode + (i % 2 == 0 ? number : number + this.blockSize));
     }
 
     if (hex.length % 3 == 1 || hex.length % 3 == 2) {
-      let padding = String.fromCharCode(
-        this.StartCode + this.blockSize * 2 + (3 - (hex.length % 3))
-      );
+      let padding = String.fromCharCode(this.StartCode + this.blockSize * 2 + (3 - (hex.length % 3)));
       result += padding;
     }
     return result;
   }
 
   public static kor2Hex(kor: string | Buffer): string {
-    if (Buffer.isBuffer(kor)) kor = kor.toString("hex");
+    let stringData = kor as string;
+    if (isBuffer(kor)) stringData = (kor as Buffer).toString("hex");
 
     let padding: number = 0;
     // console.log(kor.charCodeAt(kor.length - 1));
-    if (kor.charCodeAt(kor.length - 1) > this.blockSize * 2 + this.StartCode) {
-      padding = kor.charCodeAt(kor.length - 1) - this.StartCode - this.blockSize * 2;
-      kor = kor.slice(0, kor.length - 1);
+    if (stringData.charCodeAt(stringData.length - 1) > this.blockSize * 2 + this.StartCode) {
+      padding = stringData.charCodeAt(stringData.length - 1) - this.StartCode - this.blockSize * 2;
+      stringData = stringData.slice(0, stringData.length - 1);
     }
 
     let result = "";
-    for (var i = 0; i < kor.length; i++) {
-      let code: number = kor[i].charCodeAt(0);
+    for (var i = 0; i < stringData.length; i++) {
+      let code: number = stringData[i].charCodeAt(0);
       let number = code - this.StartCode;
       if (i % 2 == 1) number -= this.blockSize;
 
@@ -72,9 +71,11 @@ export default class Generator {
   }
 
   public static encode(plain: string | Buffer | number) {
-    if (Buffer.isBuffer(plain)) plain = plain.toString("hex");
-    else if (typeof plain == "number") plain = plain.toString(16);
-    return this.hex2Kor(plain);
+    let plainString = plain as string;
+    if (isBuffer(plain)) plainString = (plain as Buffer).toString("hex");
+    else if (typeof plain == "number") plainString = plain.toString(16);
+
+    return this.hex2Kor(plainString);
   }
   public static encodeArray(plainList: any[]): string[] {
     let strList: string[] = [];
@@ -83,7 +84,7 @@ export default class Generator {
   }
 
   public static decode(kor64: string | Buffer | number) {
-    if (Buffer.isBuffer(kor64)) kor64 = kor64.toString("hex");
+    if (isBuffer(kor64)) kor64 = (kor64 as Buffer).toString("hex");
     else if (typeof kor64 == "number") kor64 = kor64.toString(16);
     return this.kor2Hex(kor64);
   }

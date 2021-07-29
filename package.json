@@ -1,7 +1,7 @@
 {
   "name": "kor-4096",
   "description": "kor 4096 package",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "./dist/hexKor.js",
   "types": "./dist/hexKor.d.ts",
   "license": "MIT",
@@ -16,6 +16,7 @@
   "dependencies": {},
   "scripts": {
     "dev": "nodemon --exec ts-node ./src/index.ts",
+    "dev:test": "nodemon --exec ts-node ./index.js",
     "build": "tsc",
     "product": "node ./dist/index.js"
   }

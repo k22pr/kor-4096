@@ -1,34 +1,19 @@
 import korEncode from "./hexKor";
 
-let text =
-  "CF90B67643C7B1A8930ACFE64549370F207B54AABDCC2CE5E1173AFAC24458D96B37960E8FEE639C9A51C76E37744D261E332FB5B8C3F543BD72A4FABD83CE7F";
-console.log(text);
-let kor = korEncode.encode(text);
-console.log(kor);
-let hex = korEncode.decode(kor);
-console.log(hex);
+let plain = "0123456789asdf";
+let kor = korEncode.encode(plain);
+console.log(plain, kor); //값뽅뉸벚곟찁
+let hex = korEncode.encode(kor);
+console.log(kor, hex); //0123456789asdf
 
-// console.log(hex);
-// let hexList = [0, "a", 1024, "111111111111", "a0", "a000", "0", 4096, "000", "1234567890abcde0987654321", 123456789];
-// console.log(hexList);
-// let encList = korEncode.encodeArray(hexList);
-// console.log(encList);
-// let decList = korEncode.decodeArray(encList);
-// console.log(decList);
+plain = "7a538344c200b87ed788809520bc82c4c8a9519235323f9b2a8572e2ef489966";
+kor = korEncode.encode(plain);
+console.log(plain, kor); //뎥뾃끌븀랇쫗뒈법긋좂롌쒩넙븵꼣쮛꺨셲먮쭈떖밆찂
+hex = korEncode.encode(kor);
+console.log(kor, hex); //7a538344c200b87ed788809520bc82c4c8a9519235323f9b2a8572e2ef489966
 
-// let korList = [];
-
-// for (var i = 0; i < hexList.length; i++) {
-//    korList.push(hexKor.hex2Kor(hexList[i]));
-
-//    console.log(korList[i]);
-//    console.log(hexList[i]);
-//    console.log(hexKor.kor2Hex(korList[i]));
-//    console.log("\n");
-// }
-
-// let dec = 1234567891234;
-// let kor = korEncode.encode(dec);
-// console.log(dec);
-// console.log(korEncode.decode(kor));
-//console.log(kor64.Buf);
+plain = "cf90b67643c7b1a8930acfe64549370f207b54aabdcc2ce5e1173afac24458d96b37960e8fee639c9a51c76e37744d261e332fb5b8c3f543bd72a4fabd83ce7f";
+kor = korEncode.encode(plain);
+console.log(plain, kor); //룹벶덤뿇뜚쒓견쯦끔씷곲뱻녊욽룂죥먑쌺뮬비농앫꽹숎듾쩣뗉왑롶쨷덄줦귣뼯띛쓃뭔뾽댪샺럘뿎걿찁
+hex = korEncode.encode(kor);
+console.log(kor, hex); //cf90b67643c7b1a8930acfe64549370f207b54aabdcc2ce5e1173afac24458d96b37960e8fee639c9a51c76e37744d261e332fb5b8c3f543bd72a4fabd83ce7f
