@@ -1,7 +1,7 @@
 {
   "name": "kor-4096",
   "description": "kor 4096 package",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "main": "./dist/hexKor.js",
   "types": "./dist/hexKor.d.ts",
   "license": "MIT",
