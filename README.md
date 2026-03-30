@@ -1,60 +1,104 @@
-# kor4096
+# base11172
 
-encoding hex, number to korean language 4096.
+Encode any data into Korean Hangul syllables using base-11172.
 
-찁, 찂 is padding string
+11,172 Unicode Hangul syllables (가 ~ 힣, U+AC00 ~ U+D7A3) to represent arbitrary binary data. Each character carries ~13.45 bits of information, producing output ~30% the length of the original hex string.
 
-## example
+## Install
 
-### Using
-
-#### default
-
-```js
-import KorEncode from "kor-4096";
-
-let plain = "0123456789asdf";
-let kor = korEncode.encode(plain);
-console.log(kor); //값뽅뉸벚곟찁
-let hex = korEncode.encode(kor);
-console.log(hex); //0123456789asdf
-
-plain = "7a538344c200b87ed788809520bc82c4c8a9519235323f9b2a8572e2ef489966";
-kor = korEncode.encode(plain);
-console.log(kor); //뎥뾃끌븀랇쫗뒈법긋좂롌쒩넙븵꼣쮛꺨셲먮쭈떖밆찂
-hex = korEncode.encode(kor);
-console.log(hex); //7a538344c200b87ed788809520bc82c4c8a9519235323f9b2a8572e2ef489966
-
-plain =
-  "cf90b67643c7b1a8930acfe64549370f207b54aabdcc2ce5e1173afac24458d96b37960e8fee639c9a51c76e37744d261e332fb5b8c3f543bd72a4fabd83ce7f";
-kor = korEncode.encode(plain);
-console.log(kor); //룹벶덤뿇뜚쒓견쯦끔씷곲뱻녊욽룂죥먑쌺뮬비농앫꽹숎듾쩣뗉왑롶쨷덄줦귣뼯띛쓃뭔뾽댪샺럘뿎걿찁
-hex = korEncode.encode(kor);
-console.log(hex); //cf90b67643c7b1a8930acfe64549370f207b54aabdcc2ce5e1173afac24458d96b37960e8fee639c9a51c76e37744d261e332fb5b8c3f543bd72a4fabd83ce7f
+```bash
+npm install base11172
+# or
+bun add base11172
 ```
 
-#### Array
+## Usage
 
-```js
-let plain = [1, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
-let kor = korEncode.encodeArray(plain);
-console.log(kor); //["각찂","간찂","갈찂","감찁","갠찁","걀찁","검찁","관","글","뀀","됀","관밀찂"]
-let hex = korEncode.decodeArray(kor);
-console.log(hex); //["1","4","8","10","20","40","80","100","200","400","800","1000"]
+### Hex string
 
-let plain = ["1", "11", "111", "1111", "11111", "1111111", "1111111"];
-let kor = korEncode.encodeArray(plain);
-console.log(kor); //["각찂","갑찁","광","광밁찂","광밑찁","광봑각찂","광봑각찂"]
-let hex = korEncode.decodeArray(kor);
-console.log(hex); //["1","11","111","1111","11111","1111111","1111111"]
+```ts
+import { encode, decode } from "base11172";
+
+const kor = encode("7a538344c200b87ed788809520bc82c4");
+// "갂꾦댎핦쫋쮉릴콰쇁셿"
+
+const hex = decode(kor);
+// "7a538344c200b87ed788809520bc82c4"
 ```
 
-### Chainge key Size
+### Text (UTF-8)
 
-```js
-let chain = new ChainHash(inputPassword, 224);
-let chain = new ChainHash(inputPassword, 256);
-let chain = new ChainHash(inputPassword, 384);
-//default
-let chain = new ChainHash(inputPassword, 512);
+```ts
+import { encodeText, decodeText } from "base11172";
+
+const kor = encodeText("Hello World!");
+// "걲뱗솦홥쳤닿쉧"
+
+const text = decodeText(kor);
+// "Hello World!"
 ```
+
+### Buffer
+
+```ts
+import { encode, decodeToBuffer, encodeText } from "base11172";
+
+// Buffer -> Hangul
+const kor = encode(Buffer.from([0x00, 0xff, 0x42]));
+
+// Hangul -> Buffer
+const buf = decodeToBuffer(kor);
+
+// Buffer via encodeText
+const kor2 = encodeText(Buffer.from("hello"));
+```
+
+### Number
+
+```ts
+import { encode, decode } from "base11172";
+
+const kor = encode(255);    // encode(0xff)
+const hex = decode(kor);    // "ff"
+```
+
+### Array
+
+```ts
+import { encodeArray, decodeArray } from "base11172";
+
+const encoded = encodeArray(["ff", "00", 256]);
+const decoded = decodeArray(encoded);
+```
+
+## API
+
+| Function | Input | Output | Description |
+|---|---|---|---|
+| `encode` | `string \| Buffer \| number` | `string` | Hex/Buffer/number to Hangul |
+| `decode` | `string` | `string` | Hangul to hex string |
+| `encodeText` | `string \| Buffer` | `string` | UTF-8 text/Buffer to Hangul |
+| `decodeText` | `string` | `string` | Hangul to UTF-8 text |
+| `decodeToBuffer` | `string` | `Buffer` | Hangul to Buffer |
+| `encodeArray` | `(string \| Buffer \| number)[]` | `string[]` | Batch encode |
+| `decodeArray` | `string[]` | `string[]` | Batch decode |
+
+## Compression ratio
+
+| Input | Hex length | Hangul length | Ratio |
+|---|---|---|---|
+| 8 bytes | 16 chars | 5 chars | 31.3% |
+| 32 bytes (SHA-256) | 64 chars | 20 chars | 31.3% |
+| 64 bytes | 128 chars | 39 chars | 30.5% |
+
+## How it works
+
+1. Input is converted to a hex string
+2. A `"1"` prefix is prepended to preserve leading zeros
+3. The resulting number is converted to base-11172 using BigInt
+4. Each digit is mapped to a Hangul syllable (U+AC00 + digit)
+5. Decoding reverses the process
+
+## License
+
+MIT
