@@ -1,101 +1,47 @@
-const START_CODE = 44032;
-const BLOCK_SIZE = 4096;
-const DOUBLE_BLOCK = BLOCK_SIZE * 2;
+const HANGUL_START = 0xac00; // U+AC00 가
+const HANGUL_COUNT = 11172; // U+AC00 ~ U+D7A3 (가 ~ 힣)
+const HANGUL_COUNT_BIG = BigInt(HANGUL_COUNT);
 
-export function hex2Kor(hex: string): string {
-  const len = hex.length;
-  const remainder = len % 3;
-  const totalChunks = Math.ceil(len / 3);
-  const result: string[] = [];
+export function encode(input: string | Buffer | number): string {
+  const hex = toHex(input);
+  if (hex.length === 0) return "";
 
-  for (let i = 0; i < totalChunks; i++) {
-    const num = parseInt(hex.slice(i * 3, i * 3 + 3), 16);
-    result.push(String.fromCharCode(START_CODE + (i & 1 ? num + BLOCK_SIZE : num)));
+  let num = BigInt("0x1" + hex);
+  const chars: string[] = [];
+
+  while (num > 0n) {
+    chars.push(String.fromCharCode(HANGUL_START + Number(num % HANGUL_COUNT_BIG)));
+    num /= HANGUL_COUNT_BIG;
   }
 
-  if (remainder) {
-    result.push(String.fromCharCode(START_CODE + DOUBLE_BLOCK + (3 - remainder)));
-  }
-
-  return result.join("");
+  return chars.reverse().join("");
 }
 
-export function kor2Hex(kor: string | Buffer): string {
-  const str = Buffer.isBuffer(kor) ? kor.toString("hex") : kor;
-  const len = str.length;
+export function decode(kor: string): string {
+  if (kor.length === 0) return "";
 
-  let end = len;
-  let padding = 0;
-  const lastCode = str.charCodeAt(len - 1);
-  if (lastCode > DOUBLE_BLOCK + START_CODE) {
-    padding = lastCode - START_CODE - DOUBLE_BLOCK;
-    end = len - 1;
+  let num = 0n;
+  for (let i = 0; i < kor.length; i++) {
+    num = num * HANGUL_COUNT_BIG + BigInt(kor.charCodeAt(i) - HANGUL_START);
   }
 
-  const parts: string[] = [];
-  for (let i = 0; i < end; i++) {
-    const num = str.charCodeAt(i) - START_CODE - (i & 1 ? BLOCK_SIZE : 0);
-    if (num < DOUBLE_BLOCK) {
-      parts.push(
-        ((num >> 8) & 0xf).toString(16) +
-          ((num >> 4) & 0xf).toString(16) +
-          (num & 0xf).toString(16),
-      );
-    }
-  }
-
-  const raw = parts.join("");
-  return padding ? raw.slice(0, -3) + raw.slice(-3 + padding) : raw;
+  return num.toString(16).slice(1);
 }
 
-export function encode(plain: string | Buffer | number): string {
-  if (Buffer.isBuffer(plain)) return hex2Kor(plain.toString("hex"));
-  if (typeof plain === "number") return hex2Kor(plain.toString(16));
-  return hex2Kor(plain);
-}
-
-export function decode(kor: string | Buffer | number): string {
-  if (Buffer.isBuffer(kor)) return kor2Hex(kor.toString("hex"));
-  if (typeof kor === "number") return kor2Hex(kor.toString(16));
-  return kor2Hex(kor);
+export function decodeToBuffer(kor: string): Buffer {
+  return Buffer.from(decode(kor), "hex");
 }
 
 export function encodeArray(list: (string | Buffer | number)[]): string[] {
   return list.map(encode);
 }
 
-export function decodeArray(list: (string | Buffer | number)[]): string[] {
+export function decodeArray(list: string[]): string[] {
   return list.map(decode);
 }
 
-export function dec2Kor(dec: number): string {
-  return hex2Kor(dec.toString(16));
+function toHex(input: string | Buffer | number): string {
+  if (Buffer.isBuffer(input)) return input.toString("hex");
+  if (typeof input === "number") return input.toString(16);
+  return input;
 }
-
-export function buf2Kor(buf: Buffer): string {
-  return hex2Kor(buf.toString("hex"));
-}
-
-export function kor2Dec(kor: string): number {
-  return parseInt(kor2Hex(kor), 16);
-}
-
-export function kor2Buf(kor: string): Buffer {
-  return Buffer.from(kor2Hex(kor), "hex");
-}
-
-// backward-compatible default export
-const kor4096 = {
-  hex2Kor,
-  kor2Hex,
-  encode,
-  decode,
-  encodeArray,
-  decodeArray,
-  dec2Kor,
-  buf2Kor,
-  kor2Dec,
-  kor2Buf,
-};
-
-export default kor4096;

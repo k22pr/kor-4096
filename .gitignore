@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+.claude/
+dist/
 
 # Build output
 dist/
