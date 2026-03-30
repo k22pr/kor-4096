@@ -1,27 +1,28 @@
 {
   "name": "base11172",
-  "description": "Hangul base-11172 encoder/decoder using Korean syllables",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "description": "Hangul base-11172 encoder/decoder using Korean syllables",
   "license": "MIT",
   "author": "ksPr",
-  "devDependencies": {
-    "@types/node": "^25.5.0",
-    "oxlint": "^1.57.0",
-    "oxfmt": "^0.42.0",
-    "typescript": "^5.9.0"
-  },
-  "dependencies": {},
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "dev": "bun run ./src/example.ts",
     "clean": "rm -rf dist",
     "build:types": "tsc",
     "build:js": "bun build src/index.ts --minify --target=bun --outfile dist/index.js",
-    "build": "bun run clean && bun run build:types && bun run build:js",
+    "bundle": "bun run clean && bun run build:types && bun run build:js",
     "lint": "oxlint ./src",
     "fmt": "oxfmt ./src",
     "fmt:check": "oxfmt --check ./src",
     "check": "bun run lint && bun run fmt:check && bun run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.57.0",
+    "typescript": "^5.9.0"
   }
 }
