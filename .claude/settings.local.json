@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun --version)",
+      "Bash(npx oxlint:*)",
+      "Bash(npx oxfmt:*)",
+      "Bash(bun install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc)",
+      "Bash(bun run:*)"
+    ]
+  }
+}

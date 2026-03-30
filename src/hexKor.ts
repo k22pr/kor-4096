@@ -1,97 +1,99 @@
-import { isBuffer } from "./util";
+const START_CODE = 44032;
+const BLOCK_SIZE = 4096;
+const DOUBLE_BLOCK = BLOCK_SIZE * 2;
 
-export default class Generator {
-  private static StartCode: number = 44032;
-  private static blockSize: number = 4096;
-  public static hex2Kor(hex: string): string {
-    let result = "";
-    for (var i = 0; i < hex.length / 3; i++) {
-      let number = parseInt(hex.substr(i * 3, 3), 16);
-      result += String.fromCharCode(this.StartCode + (i % 2 == 0 ? number : number + this.blockSize));
-    }
+export function hex2Kor(hex: string): string {
+  const len = hex.length;
+  const chunks = (len / 3) | 0;
+  const remainder = len % 3;
+  const result: string[] = new Array(chunks + (remainder ? 1 : 0));
 
-    if (hex.length % 3 == 1 || hex.length % 3 == 2) {
-      let padding = String.fromCharCode(this.StartCode + this.blockSize * 2 + (3 - (hex.length % 3)));
-      result += padding;
-    }
-    return result;
+  for (let i = 0; i < chunks; i++) {
+    const num = parseInt(hex.slice(i * 3, i * 3 + 3), 16);
+    result[i] = String.fromCharCode(START_CODE + (i & 1 ? num + BLOCK_SIZE : num));
   }
 
-  public static kor2Hex(kor: string | Buffer): string {
-    let stringData = kor as string;
-    if (isBuffer(kor)) stringData = (kor as Buffer).toString("hex");
-
-    let padding: number = 0;
-    // console.log(kor.charCodeAt(kor.length - 1));
-    if (stringData.charCodeAt(stringData.length - 1) > this.blockSize * 2 + this.StartCode) {
-      padding = stringData.charCodeAt(stringData.length - 1) - this.StartCode - this.blockSize * 2;
-      stringData = stringData.slice(0, stringData.length - 1);
-    }
-
-    let result = "";
-    for (var i = 0; i < stringData.length; i++) {
-      let code: number = stringData[i].charCodeAt(0);
-      let number = code - this.StartCode;
-      if (i % 2 == 1) number -= this.blockSize;
-
-      const c = number & 0xf;
-      const b = (number >>> 4) & 0xf;
-      const a = (number >>> 8) & 0xf;
-
-      if (number < this.blockSize * 2) {
-        result += [a, b, c].map((item) => item.toString(16)).join("");
-      }
-    }
-
-    let korArray = result.split("");
-    korArray.splice(-3, padding).join("");
-    result = korArray.join("");
-    return result;
+  if (remainder) {
+    result[chunks] = String.fromCharCode(START_CODE + DOUBLE_BLOCK + (3 - remainder));
   }
 
-  public static dec2Kor(dec: number): string {
-    return this.hex2Kor(dec.toString(16));
-  }
-  public static dec2KorBuf(dec: number): Buffer {
-    return Buffer.from(this.hex2Kor(dec.toString(16)));
-  }
-
-  public static buf2Kor(buf: Buffer): string {
-    return this.hex2Kor(buf.toString("hex"));
-  }
-  public static buf2KorBuf(buf: Buffer): Buffer {
-    return Buffer.from(this.hex2Kor(buf.toString("hex")));
-  }
-
-  public static kor2Dec(kor: string): number {
-    return parseInt(this.kor2Hex(kor), 16);
-  }
-  public static kor2Buf(kor: string): Buffer {
-    return Buffer.from(this.kor2Hex(kor));
-  }
-
-  public static encode(plain: string | Buffer | number) {
-    let plainString = plain as string;
-    if (isBuffer(plain)) plainString = (plain as Buffer).toString("hex");
-    else if (typeof plain == "number") plainString = plain.toString(16);
-
-    return this.hex2Kor(plainString);
-  }
-  public static encodeArray(plainList: any[]): string[] {
-    let strList: string[] = [];
-    plainList.map((plain) => strList.push(this.encode(plain)));
-    return strList;
-  }
-
-  public static decode(kor64: string | Buffer | number) {
-    if (isBuffer(kor64)) kor64 = (kor64 as Buffer).toString("hex");
-    else if (typeof kor64 == "number") kor64 = kor64.toString(16);
-    return this.kor2Hex(kor64);
-  }
-
-  public static decodeArray(korList: any[]): string[] {
-    let hexList: string[] = [];
-    korList.map((plain) => hexList.push(this.decode(plain)));
-    return hexList;
-  }
+  return result.join("");
 }
+
+export function kor2Hex(kor: string | Buffer): string {
+  const str = Buffer.isBuffer(kor) ? kor.toString("hex") : kor;
+  const len = str.length;
+
+  let end = len;
+  let padding = 0;
+  const lastCode = str.charCodeAt(len - 1);
+  if (lastCode > DOUBLE_BLOCK + START_CODE) {
+    padding = lastCode - START_CODE - DOUBLE_BLOCK;
+    end = len - 1;
+  }
+
+  const parts: string[] = new Array(end);
+  for (let i = 0; i < end; i++) {
+    const num = str.charCodeAt(i) - START_CODE - (i & 1 ? BLOCK_SIZE : 0);
+    if (num < DOUBLE_BLOCK) {
+      parts[i] = ((num >> 8) & 0xf).toString(16) + ((num >> 4) & 0xf).toString(16) + (num & 0xf).toString(16);
+    } else {
+      parts[i] = "";
+    }
+  }
+
+  const raw = parts.join("");
+  return padding ? raw.slice(0, -padding) : raw;
+}
+
+export function encode(plain: string | Buffer | number): string {
+  if (Buffer.isBuffer(plain)) return hex2Kor(plain.toString("hex"));
+  if (typeof plain === "number") return hex2Kor(plain.toString(16));
+  return hex2Kor(plain);
+}
+
+export function decode(kor: string | Buffer | number): string {
+  if (Buffer.isBuffer(kor)) return kor2Hex(kor.toString("hex"));
+  if (typeof kor === "number") return kor2Hex(kor.toString(16));
+  return kor2Hex(kor);
+}
+
+export function encodeArray(list: (string | Buffer | number)[]): string[] {
+  return list.map(encode);
+}
+
+export function decodeArray(list: (string | Buffer | number)[]): string[] {
+  return list.map(decode);
+}
+
+export function dec2Kor(dec: number): string {
+  return hex2Kor(dec.toString(16));
+}
+
+export function buf2Kor(buf: Buffer): string {
+  return hex2Kor(buf.toString("hex"));
+}
+
+export function kor2Dec(kor: string): number {
+  return parseInt(kor2Hex(kor), 16);
+}
+
+export function kor2Buf(kor: string): Buffer {
+  return Buffer.from(kor2Hex(kor), "hex");
+}
+
+// backward-compatible default export
+const kor4096 = {
+  hex2Kor,
+  kor2Hex,
+  encode,
+  decode,
+  encodeArray,
+  decodeArray,
+  dec2Kor,
+  buf2Kor,
+  kor2Dec,
+  kor2Buf,
+};
+
+export default kor4096;
