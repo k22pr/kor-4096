@@ -4,17 +4,17 @@ const DOUBLE_BLOCK = BLOCK_SIZE * 2;
 
 export function hex2Kor(hex: string): string {
   const len = hex.length;
-  const chunks = (len / 3) | 0;
   const remainder = len % 3;
-  const result: string[] = new Array(chunks + (remainder ? 1 : 0));
+  const totalChunks = Math.ceil(len / 3);
+  const result: string[] = [];
 
-  for (let i = 0; i < chunks; i++) {
+  for (let i = 0; i < totalChunks; i++) {
     const num = parseInt(hex.slice(i * 3, i * 3 + 3), 16);
-    result[i] = String.fromCharCode(START_CODE + (i & 1 ? num + BLOCK_SIZE : num));
+    result.push(String.fromCharCode(START_CODE + (i & 1 ? num + BLOCK_SIZE : num)));
   }
 
   if (remainder) {
-    result[chunks] = String.fromCharCode(START_CODE + DOUBLE_BLOCK + (3 - remainder));
+    result.push(String.fromCharCode(START_CODE + DOUBLE_BLOCK + (3 - remainder)));
   }
 
   return result.join("");
@@ -32,18 +32,20 @@ export function kor2Hex(kor: string | Buffer): string {
     end = len - 1;
   }
 
-  const parts: string[] = new Array(end);
+  const parts: string[] = [];
   for (let i = 0; i < end; i++) {
     const num = str.charCodeAt(i) - START_CODE - (i & 1 ? BLOCK_SIZE : 0);
     if (num < DOUBLE_BLOCK) {
-      parts[i] = ((num >> 8) & 0xf).toString(16) + ((num >> 4) & 0xf).toString(16) + (num & 0xf).toString(16);
-    } else {
-      parts[i] = "";
+      parts.push(
+        ((num >> 8) & 0xf).toString(16) +
+          ((num >> 4) & 0xf).toString(16) +
+          (num & 0xf).toString(16),
+      );
     }
   }
 
   const raw = parts.join("");
-  return padding ? raw.slice(0, -padding) : raw;
+  return padding ? raw.slice(0, -3) + raw.slice(-3 + padding) : raw;
 }
 
 export function encode(plain: string | Buffer | number): string {
