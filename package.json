@@ -3,7 +3,7 @@
   "description": "Hangul base-11172 encoder/decoder using Korean syllables",
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "types": "./dist/hexKor.d.ts",
+  "types": "./dist/index.d.ts",
   "license": "MIT",
   "author": "ksPr",
   "devDependencies": {
@@ -14,10 +14,10 @@
   },
   "dependencies": {},
   "scripts": {
-    "dev": "bun run ./src/index.ts",
+    "dev": "bun run ./src/example.ts",
     "clean": "rm -rf dist",
-    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
-    "build:js": "bun build src/hexKor.ts --minify --target=bun --outfile dist/index.js",
+    "build:types": "tsc",
+    "build:js": "bun build src/index.ts --minify --target=bun --outfile dist/index.js",
     "build": "bun run clean && bun run build:types && bun run build:js",
     "lint": "oxlint ./src",
     "fmt": "oxfmt ./src",

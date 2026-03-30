@@ -4,11 +4,13 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "./dist",
+    "declaration": true,
+    "emitDeclarationOnly": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src/index.ts"],
   "exclude": ["node_modules", "dist"]
 }
