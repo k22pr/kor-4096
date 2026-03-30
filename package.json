@@ -1,5 +1,5 @@
 {
-  "name": "kor-4096",
+  "name": "base11172",
   "description": "Hangul base-11172 encoder/decoder using Korean syllables",
   "version": "1.0.0",
   "main": "./dist/index.js",
